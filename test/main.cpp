@@ -388,3 +388,31 @@ TEST(RadixTree, Statistics)
     EXPECT_NO_THROW(EXPECT_EQ(2, child.get<size_t>("0")));
     EXPECT_NO_THROW(EXPECT_EQ(4, child.get<size_t>("1")));
 }
+
+TEST(RadixTree, EmptyKey)
+{
+    RadixTree t;
+
+    // root
+    EXPECT_EQ(1, t.node_count());
+    EXPECT_EQ(0, t.value_count());
+
+    // (root)
+    t.insert("", 0);
+    EXPECT_EQ(1, t.node_count());
+    EXPECT_EQ(1, t.value_count());
+
+    // empty key will match all keys.
+    auto cnt = 0u;
+    std::string childKey;
+    t.traverse("foo",
+        [&](const RadixTree::NodeType&, const RadixTree::Key &key) {
+            ++cnt;
+            childKey = key;
+            return false;
+        }
+    );
+
+    ASSERT_EQ(1, cnt);
+    EXPECT_EQ("", childKey);
+}
