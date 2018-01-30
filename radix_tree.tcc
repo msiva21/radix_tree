@@ -13,8 +13,13 @@ template<typename K, typename V>
 inline void RadixTree<K, V>::
 insert(const Key &key, const Value &value)
 {
-    auto &node = m_root.appendChild(m_factory, key);
-    node.appendValue(value);
+    if (key.empty()) {
+        m_root.appendValue(value);
+    }
+    else {
+        auto &node = m_root.appendChild(m_factory, key);
+        node.appendValue(value);
+    }
 }
 
 template<typename K, typename V>
@@ -58,6 +63,10 @@ template<typename Visitor>
 inline void RadixTree<K, V>::
 traverse(const Key &query, Visitor &&visit) const
 {
+    if (m_root.hasValue()) {
+        visit(m_root, m_root.key());
+    }
+
     auto *node = &m_root;
     auto key = query;
 
