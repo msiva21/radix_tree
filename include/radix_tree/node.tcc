@@ -1,5 +1,7 @@
 #include "node.hpp"
 
+#include "utility.hpp"
+
 #include <boost/range/algorithm.hpp>
 #include <boost/algorithm/string.hpp>
 
@@ -134,7 +136,7 @@ appendChild(NodeFactory<Node> &factory, const Key &key)
         // [before] [after appending "abcd"]
         //  abc      abc - b
         else if (prefixLen == childKey.size()) {
-            const Key suffix { key.begin() + prefixLen, key.end() };
+            const Key suffix { next(key.begin(), prefixLen), key.end() };
             return child.appendChild(factory, suffix);
         }
         // Appending key is the prefix of the child's key
@@ -142,7 +144,9 @@ appendChild(NodeFactory<Node> &factory, const Key &key)
         //  abc      ab - c
         else if (prefixLen == key.size()) {
             const Key suffix {
-                          childKey.begin() + prefixLen, childKey.end() };
+                next(childKey.begin(), prefixLen),
+                childKey.end()
+            };
             assert(!suffix.empty());
 
             auto &newChild = factory.newNode(key);
@@ -169,7 +173,7 @@ appendChild(NodeFactory<Node> &factory, const Key &key)
             assert(key.size() > prefixLen && childKey.size() > prefixLen);
 
             // split the child into a new branch and its child
-            const auto suffixIt = childKey.begin() + prefixLen;
+            const auto suffixIt = next(childKey.begin(), prefixLen);
             const Key prefix { childKey.begin(), suffixIt },
                       suffix { suffixIt, childKey.end() };
             assert(!prefix.empty());
@@ -190,7 +194,7 @@ appendChild(NodeFactory<Node> &factory, const Key &key)
             assert(&(*rv.first) == &newBranch);
 
             // create a new node and append to the new branch
-            const Key keySuffix { key.begin() + prefixLen, key.end() };
+            const Key keySuffix { next(key.begin(), prefixLen), key.end() };
             auto &newChild = factory.newNode(keySuffix);
             rv = newBranch.m_children->insert(newChild);
             assert(rv.second);

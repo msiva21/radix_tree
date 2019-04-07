@@ -1,5 +1,7 @@
 #include "radix_tree.hpp"
 
+#include "utility.hpp"
+
 #include <cassert>
 #include <map>
 #include <ostream>
@@ -47,7 +49,7 @@ template<typename K, typename V>
 inline size_t RadixTree<K, V>::
 value_count() const
 {
-    auto result = 0u;
+    size_t result = 0;
     m_root.traverse(
         [&result](const NodeType &node, const size_t) {
             if (node.hasValue()) {
@@ -76,7 +78,10 @@ traverse(const Key &query, Visitor &&visit) const
             const auto &childKey = child->key();
             if (visit(*child, childKey)) return;
 
-            key = Key { key.begin() + childKey.size(), key.end() };
+            key = Key {
+                next(key.begin(),childKey.size()),
+                key.end()
+            };
             node = child;
         }
         else {
