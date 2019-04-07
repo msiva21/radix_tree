@@ -1,15 +1,10 @@
-cmake_minimum_required(VERSION 3.4)
-project(radix_tree_test CXX)
-
 find_package(GTest REQUIRED)
 include_directories(${GTEST_INCLUDE_DIRS})
 
-include_directories(..)
-
-add_executable(test_main
+add_executable(test_radix_tree
     main.cpp
 )
-set_property(TARGET test_main PROPERTY CXX_STANDARD 11)
-target_link_libraries(test_main
+target_link_libraries(test_radix_tree
     ${GTEST_BOTH_LIBRARIES}
+    radix_tree
 )
