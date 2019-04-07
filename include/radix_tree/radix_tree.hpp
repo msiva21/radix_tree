@@ -21,7 +21,7 @@ public:
 
 public:
     // modifier
-    void insert(const Key&, const Value&);
+    void insert(Key const&, Value const&);
     void clear();
 
     // query
@@ -29,14 +29,14 @@ public:
     size_t value_count() const;
 
     template<typename Visitor>
-        void traverse(const Key&, Visitor&&) const;
+        void traverse(Key const&, Visitor&&) const;
 
     boost::property_tree::ptree statistics() const;
 
     void validate() const
     {
         m_root.traverse(
-            [](const NodeType &node, const size_t) {
+            [](NodeType const& node, size_t) {
                 node.validate();
             }
         );

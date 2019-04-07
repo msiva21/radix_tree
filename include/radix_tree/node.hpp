@@ -18,16 +18,16 @@ struct CaseInsensitiveNodeTraits
     using Char = typename Key::value_type;
 
     struct CharEquals {
-        bool operator()(const Char lhs, const Char rhs) const {
-            static const auto &ct =
+        bool operator()(Char const lhs, Char const rhs) const {
+            static auto const& ct =
                 std::use_facet<std::ctype<Char>>(std::locale {});
             return ct.toupper(lhs) == ct.toupper(rhs);
         }
     };
 
     struct CharCompare {
-        bool operator()(const Char lhs, const Char rhs) const {
-            static const auto &ct =
+        bool operator()(Char const lhs, Char const rhs) const {
+            static auto const& ct =
                 std::use_facet<std::ctype<Char>>(std::locale {});
             return ct.toupper(lhs) < ct.toupper(rhs);
         }
@@ -46,8 +46,8 @@ public:
     using CharCompare = typename T::CharCompare;
 
     struct ChildCompare {
-        bool operator()(const Node &lhs, const Node &rhs) const {
-            static const CharCompare compare {};
+        bool operator()(Node const& lhs, Node const& rhs) const {
+            static CharCompare const compare {};
             return compare(lhs.key().front(), rhs.key().front());
         }
     };
@@ -57,18 +57,18 @@ public:
         boost::iterator_range<typename Values::const_iterator>;
 public:
     // constructor / destructor
-    explicit Node(const Key&);
+    explicit Node(Key const&);
     Node() = default;
     ~Node();
 
     // accessor
-    const Key &key() const { return m_key; }
+    Key const& key() const { return m_key; }
 
     ValuesRange values() const;
 
     // query
-    Node *findPrefixChild(const Key&) const;
-    Node *findPrefixChild(const Key&);
+    Node* findPrefixChild(Key const&) const;
+    Node* findPrefixChild(Key const&);
 
     bool hasChild() const;
     bool hasValue() const;
@@ -83,7 +83,7 @@ public:
 
         if (m_children) {
             auto curr = m_children->begin(), next = std::next(curr);
-            const auto end = m_children->end();
+            auto const end = m_children->end();
             for (; next != end; ++curr, ++next) {
                 assert(!m_isEquals(curr->key().front(), next->key().front()));
             }
@@ -91,17 +91,17 @@ public:
     }
 
     // modifier
-    Node &appendChild(NodeFactory<Node>&, const Key&);
-    void appendValue(const Value&);
+    Node& appendChild(NodeFactory<Node>&, Key const&);
+    void appendValue(Value const&);
 
     void clear();
 
 private:
     template<typename Visitor>
-        void traverse(Visitor&&, const size_t level) const;
+        void traverse(Visitor&&, size_t const level) const;
 
     typename Children::iterator
-        findPartialPrefixChild(const Key&) const;
+        findPartialPrefixChild(Key const&) const;
 
 private:
     Key m_key;
