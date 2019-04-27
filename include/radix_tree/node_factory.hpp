@@ -7,10 +7,10 @@
 namespace radix_tree {
 
 template<typename NodeT>
-class NodeFactory
+class node_factory
 {
 public:
-    NodeT &newNode(typename NodeT::Key const& key)
+    NodeT &new_node(typename NodeT::key_t const& key)
     {
         m_store.push_back(std::make_unique<NodeT>(key));
         return *m_store.back();

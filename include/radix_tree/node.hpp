@@ -14,22 +14,22 @@
 namespace radix_tree {
 
 template<typename Key>
-struct CaseInsensitiveNodeTraits
+struct case_insensitive_node_traits
 {
-    using Char = typename Key::value_type;
+    using char_t = typename Key::value_type;
 
-    struct CharEquals {
-        bool operator()(Char const lhs, Char const rhs) const {
+    struct char_equals {
+        bool operator()(char_t const lhs, char_t const rhs) const {
             static auto const& ct =
-                std::use_facet<std::ctype<Char>>(std::locale {});
+                std::use_facet<std::ctype<char_t>>(std::locale {});
             return ct.toupper(lhs) == ct.toupper(rhs);
         }
     };
 
-    struct CharCompare {
-        bool operator()(Char const lhs, Char const rhs) const {
+    struct char_compare {
+        bool operator()(char_t const lhs, char_t const rhs) const {
             static auto const& ct =
-                std::use_facet<std::ctype<Char>>(std::locale {});
+                std::use_facet<std::ctype<char_t>>(std::locale {});
             return ct.toupper(lhs) < ct.toupper(rhs);
         }
     };
@@ -37,43 +37,43 @@ struct CaseInsensitiveNodeTraits
 
 namespace bi = boost::intrusive;
 
-template<typename K, typename V, typename T = CaseInsensitiveNodeTraits<K>>
-class Node : public bi::set_base_hook<bi::optimize_size<true>>
+template<typename Key, typename Value, typename Traits = case_insensitive_node_traits<Key>>
+class node : public bi::set_base_hook<bi::optimize_size<true>>
 {
 public:
-    using Key = K;
-    using Value = V;
-    using CharEquals = typename T::CharEquals;
-    using CharCompare = typename T::CharCompare;
+    using key_t = Key;
+    using value_t = Value;
+    using char_equals_t = typename Traits::char_equals;
+    using char_compare_t = typename Traits::char_compare;
 
-    struct ChildCompare {
-        bool operator()(Node const& lhs, Node const& rhs) const {
-            static CharCompare const compare {};
+    struct child_compare {
+        bool operator()(node const& lhs, node const& rhs) const {
+            static char_compare_t const compare {};
             return compare(lhs.key().front(), rhs.key().front());
         }
     };
-    using Children = bi::set<Node, bi::compare<ChildCompare>>;
-    using Values = std::vector<Value>;
-    using ValuesRange =
-        boost::iterator_range<typename Values::const_iterator>;
+    using children_t = bi::set<node, bi::compare<child_compare>>;
+    using values_t = std::vector<Value>;
+    using values_range_t =
+        boost::iterator_range<typename values_t::const_iterator>;
 public:
     // constructor / destructor
-    explicit Node(Key const&);
-    Node() = default;
-    ~Node();
+    explicit node(Key const&);
+    node() = default;
+    ~node();
 
     // accessor
     Key const& key() const { return m_key; }
 
-    ValuesRange values() const;
+    values_range_t values() const;
 
     // query
-    Node* findPrefixChild(Key const&) const;
-    Node* findPrefixChild(Key const&);
+    node* find_prefix_child(Key const&) const;
+    node* find_prefix_child(Key const&);
 
-    bool hasChild() const;
-    bool hasValue() const;
-    size_t childCount() const;
+    bool has_child() const;
+    bool has_value() const;
+    size_t child_count() const;
 
     template<typename Visitor>
         void traverse(Visitor&&) const;
@@ -86,14 +86,14 @@ public:
             auto curr = m_children->begin(), next = std::next(curr);
             auto const end = m_children->end();
             for (; next != end; ++curr, ++next) {
-                assert(!m_isEquals(curr->key().front(), next->key().front()));
+                assert(!m_is_equals(curr->key().front(), next->key().front()));
             }
         }
     }
 
     // modifier
-    Node& appendChild(NodeFactory<Node>&, Key const&);
-    void appendValue(Value const&);
+    node& append_child(node_factory<node>&, Key const&);
+    void append_value(Value const&);
 
     void clear();
 
@@ -101,16 +101,16 @@ private:
     template<typename Visitor>
         void traverse(Visitor&&, size_t const level) const;
 
-    typename Children::iterator
-        findPartialPrefixChild(Key const&) const;
+    typename children_t::iterator
+        find_partial_prefix_child(Key const&) const;
 
 private:
     Key m_key;
-    std::unique_ptr<Children> m_children;
-    std::unique_ptr<Values> m_values;
+    std::unique_ptr<children_t> m_children;
+    std::unique_ptr<values_t> m_values;
 
-    static const CharEquals m_isEquals;
-    static const CharCompare m_charCompare;
+    static const char_equals_t m_is_equals;
+    static const char_compare_t m_char_compare;
 };
 
 } // namespace radix_tree

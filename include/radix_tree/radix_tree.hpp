@@ -6,13 +6,13 @@
 
 namespace radix_tree {
 
-template<typename K, typename V>
-class RadixTree
+template<typename Key, typename Value>
+class tree
 {
 public:
-    using Key = K;
-    using Value = V;
-    using NodeType = Node<Key, Value>;
+    using key_t = Key;
+    using value_t = Value;
+    using node_t = node<Key, Value>;
 
 public:
     // modifier
@@ -25,28 +25,28 @@ public:
 
     // Traverse tree with given key and call visitor on each nodes in the path.
     //
-    // @param Visitor callable that has signature of void(NodeType const&, Key node_key)
+    // @param Visitor callable that has signature of void(node_t const&, Key node_key)
     template<typename Visitor>
         void traverse(Key const&, Visitor&&) const;
 
     // Traverse all nodes in the tree and call visitor on each nodes.
     //
-    // @param Visitor callable which has signature void(NodeType const&, size_t level)
+    // @param Visitor callable which has signature void(node_t const&, size_t level)
     template<typename Visitor>
         void traverse_all(Visitor&&) const;
 
     void validate() const
     {
         m_root.traverse(
-            [](NodeType const& node, size_t) {
+            [](auto& node, size_t) {
                 node.validate();
             }
         );
     }
 
 private:
-    NodeFactory<NodeType> m_factory;
-    NodeType m_root;
+    node_factory<node_t> m_factory;
+    node_t m_root;
 };
 
 } // namespace radix_tree

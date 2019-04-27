@@ -7,20 +7,7 @@
 
 #include <gtest/gtest.h>
 
-struct Node {
-    using Key = std::string;
-    using Value = size_t;
-
-    Node(const Key &key, const Value &value)
-        : m_key { key },
-          m_value { value }
-    {}
-
-    Key m_key;
-    Value m_value;
-};
-
-using RadixTree = radix_tree::RadixTree<std::string, size_t>;
+using RadixTree = radix_tree::tree<std::string, size_t>;
 
 TEST(RadixTree, Elementary)
 {
@@ -34,17 +21,17 @@ TEST(RadixTree, Elementary)
     EXPECT_EQ(1, t.value_count());
 
     auto cnt = 0u;
-    std::string childKey;
+    std::string child_key;
     t.traverse("foo",
-        [&](const RadixTree::NodeType&, const RadixTree::Key &key) {
+        [&](auto&, auto const& key) {
             ++cnt;
-            childKey = key;
+            child_key = key;
             return false;
         }
     );
 
     EXPECT_EQ(1, cnt);
-    EXPECT_EQ("foo", childKey);
+    EXPECT_EQ("foo", child_key);
 }
 
 TEST(RadixTree, AppendSuffixNode)
@@ -59,19 +46,19 @@ TEST(RadixTree, AppendSuffixNode)
     EXPECT_EQ(2, t.value_count());
 
     auto cnt = 0u;
-    std::vector<std::string> childKeys;
+    std::vector<std::string> child_keys;
     t.traverse("abcd",
-        [&](const RadixTree::NodeType&, const RadixTree::Key &key) {
+        [&](auto&, auto const& key) {
             ++cnt;
-            childKeys.push_back(key);
+            child_keys.push_back(key);
             return false;
         }
     );
 
     EXPECT_EQ(2, cnt);
-    ASSERT_EQ(2, childKeys.size());
-    EXPECT_EQ("abc", childKeys[0]);
-    EXPECT_EQ("d", childKeys[1]);
+    ASSERT_EQ(2, child_keys.size());
+    EXPECT_EQ("abc", child_keys[0]);
+    EXPECT_EQ("d", child_keys[1]);
 }
 
 TEST(RadixTree, SplitNode)
@@ -89,19 +76,19 @@ TEST(RadixTree, SplitNode)
     EXPECT_EQ(2, t.value_count());
 
     auto cnt = 0u;
-    std::vector<std::string> childKeys;
+    std::vector<std::string> child_keys;
     t.traverse("abcd",
-        [&](const RadixTree::NodeType&, const RadixTree::Key &key) {
+        [&](auto&, auto const& key) {
             ++cnt;
-            childKeys.push_back(key);
+            child_keys.push_back(key);
             return false;
         }
     );
 
     EXPECT_EQ(2, cnt);
-    EXPECT_EQ(2, childKeys.size());
-    EXPECT_EQ("abc", childKeys[0]);
-    EXPECT_EQ("d", childKeys[1]);
+    EXPECT_EQ(2, child_keys.size());
+    EXPECT_EQ("abc", child_keys[0]);
+    EXPECT_EQ("d", child_keys[1]);
 }
 
 TEST(RadixTree, SplitPrefixNode)
@@ -127,36 +114,36 @@ TEST(RadixTree, SplitPrefixNode)
 
     {
         auto cnt = 0u;
-        std::vector<std::string> childKeys;
+        std::vector<std::string> child_keys;
         t.traverse("abcd",
-            [&](const RadixTree::NodeType&, const RadixTree::Key &key) {
+            [&](auto&, auto const& key) {
                 ++cnt;
-                childKeys.push_back(key);
+                child_keys.push_back(key);
                 return false;
             }
         );
 
         EXPECT_EQ(3, cnt);
-        EXPECT_EQ(3, childKeys.size());
-        EXPECT_EQ("a", childKeys[0]);
-        EXPECT_EQ("bc", childKeys[1]);
-        EXPECT_EQ("d", childKeys[2]);
+        EXPECT_EQ(3, child_keys.size());
+        EXPECT_EQ("a", child_keys[0]);
+        EXPECT_EQ("bc", child_keys[1]);
+        EXPECT_EQ("d", child_keys[2]);
     }
     {
         auto cnt = 0u;
-        std::vector<std::string> childKeys;
+        std::vector<std::string> child_keys;
         t.traverse("ade",
-            [&](const RadixTree::NodeType&, const RadixTree::Key &key) {
+            [&](auto&, auto const& key) {
                 ++cnt;
-                childKeys.push_back(key);
+                child_keys.push_back(key);
                 return false;
             }
         );
 
         EXPECT_EQ(2, cnt);
-        EXPECT_EQ(2, childKeys.size());
-        EXPECT_EQ("a", childKeys[0]);
-        EXPECT_EQ("de", childKeys[1]);
+        EXPECT_EQ(2, child_keys.size());
+        EXPECT_EQ("a", child_keys[0]);
+        EXPECT_EQ("de", child_keys[1]);
     }
 }
 
@@ -168,17 +155,17 @@ TEST(RadixTree, CaseInsensitive)
         t.insert("FOO", 0);
 
         auto cnt = 0u;
-        std::string childKey;
+        std::string child_key;
         t.traverse("foo",
-            [&](const RadixTree::NodeType&, const RadixTree::Key &key) {
+            [&](auto&, auto const& key) {
                 ++cnt;
-                childKey = key;
+                child_key = key;
                 return false;
             }
         );
 
         ASSERT_EQ(1, cnt);
-        EXPECT_EQ("FOO", childKey);
+        EXPECT_EQ("FOO", child_key);
     }
     {
         RadixTree t;
@@ -186,17 +173,17 @@ TEST(RadixTree, CaseInsensitive)
         t.insert("foo", 0);
 
         auto cnt = 0u;
-        std::string childKey;
+        std::string child_key;
         t.traverse("FOO",
-            [&](const RadixTree::NodeType&, const RadixTree::Key &key) {
+            [&](auto&, auto const& key) {
                 ++cnt;
-                childKey = key;
+                child_key = key;
                 return false;
             }
         );
 
         ASSERT_EQ(1, cnt);
-        EXPECT_EQ("foo", childKey);
+        EXPECT_EQ("foo", child_key);
     }
     {
         RadixTree t;
@@ -205,17 +192,17 @@ TEST(RadixTree, CaseInsensitive)
         t.insert("FOO", 1);
 
         auto cnt = 0u;
-        std::string childKey;
+        std::string child_key;
         t.traverse("foo",
-            [&](const RadixTree::NodeType&, const RadixTree::Key &key) {
+            [&](auto&, auto const& key) {
                 ++cnt;
-                childKey = key;
+                child_key = key;
                 return false;
             }
         );
 
         ASSERT_EQ(1, cnt);
-        EXPECT_EQ("foo", childKey);
+        EXPECT_EQ("foo", child_key);
     }
 }
 
@@ -249,7 +236,7 @@ operator"" _r(const char *str, const size_t len)
 
 TEST(RadixTree, UseRangeAsKey)
 {
-    using RadixTreeR = radix_tree::RadixTree<StringRange, size_t>;
+    using RadixTreeR = radix_tree::tree<StringRange, size_t>;
 
     // root
     RadixTreeR t;
@@ -272,36 +259,36 @@ TEST(RadixTree, UseRangeAsKey)
 
     {
         auto cnt = 0u;
-        std::vector<RadixTreeR::Key> childKeys;
+        std::vector<RadixTreeR::key_t> child_keys;
         t.traverse("abcd"_r,
-            [&](const RadixTreeR::NodeType&, const RadixTreeR::Key &key) {
+            [&](auto&, auto const& key) {
                 ++cnt;
-                childKeys.push_back(key);
+                child_keys.push_back(key);
                 return false;
             }
         );
 
         EXPECT_EQ(3, cnt);
-        EXPECT_EQ(3, childKeys.size());
-        EXPECT_EQ("a"_r, childKeys[0]);
-        EXPECT_EQ("bc"_r, childKeys[1]);
-        EXPECT_EQ("d"_r, childKeys[2]);
+        EXPECT_EQ(3, child_keys.size());
+        EXPECT_EQ("a"_r, child_keys[0]);
+        EXPECT_EQ("bc"_r, child_keys[1]);
+        EXPECT_EQ("d"_r, child_keys[2]);
     }
     {
         auto cnt = 0u;
-        std::vector<RadixTreeR::Key> childKeys;
+        std::vector<RadixTreeR::key_t> child_keys;
         t.traverse("ade"_r,
-            [&](const RadixTreeR::NodeType&, const RadixTreeR::Key &key) {
+            [&](auto&, auto const& key) {
                 ++cnt;
-                childKeys.push_back(key);
+                child_keys.push_back(key);
                 return false;
             }
         );
 
         EXPECT_EQ(2, cnt);
-        EXPECT_EQ(2, childKeys.size());
-        EXPECT_EQ("a"_r, childKeys[0]);
-        EXPECT_EQ("de"_r, childKeys[1]);
+        EXPECT_EQ(2, child_keys.size());
+        EXPECT_EQ("a"_r, child_keys[0]);
+        EXPECT_EQ("de"_r, child_keys[1]);
     }
 }
 
@@ -315,7 +302,7 @@ TEST(RadixTree, Foo)
 
     auto cnt = 0u;
     t.traverse("adblock.org",
-        [&](const RadixTree::NodeType&, const RadixTree::Key &key) {
+        [&](auto&, auto const& key) {
             std::cout << key << "\n";
             ++cnt;
             return false;
@@ -357,7 +344,7 @@ TEST(RadixTree, Statistics)
     t.insert("abc", 0);
     t.insert("abcd", 0);
 
-    const auto &stats = statistics(t);
+    auto const &stats = statistics(t);
 
     namespace bpt = boost::property_tree;
 
@@ -405,17 +392,17 @@ TEST(RadixTree, EmptyKey)
 
     // empty key will match all keys.
     auto cnt = 0u;
-    std::string childKey;
+    std::string child_key;
     t.traverse("foo",
-        [&](const RadixTree::NodeType&, const RadixTree::Key &key) {
+        [&](auto&, auto const& key) {
             ++cnt;
-            childKey = key;
+            child_key = key;
             return false;
         }
     );
 
     ASSERT_EQ(1, cnt);
-    EXPECT_EQ("", childKey);
+    EXPECT_EQ("", child_key);
 }
 
 TEST(RadixTree, BugFix_CantClearValueOfEmptyRoot)
