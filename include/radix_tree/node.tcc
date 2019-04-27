@@ -2,8 +2,7 @@
 
 #include "utility.hpp"
 
-#include <boost/range/algorithm.hpp>
-#include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/predicate.hpp>
 
 namespace radix_tree {
 

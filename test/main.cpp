@@ -1,4 +1,5 @@
 #include <radix_tree/radix_tree.hpp>
+#include <radix_tree/statistics.hpp>
 
 #include <string>
 
@@ -356,7 +357,7 @@ TEST(RadixTree, Statistics)
     t.insert("abc", 0);
     t.insert("abcd", 0);
 
-    const auto &stats = t.statistics();
+    const auto &stats = statistics(t);
 
     namespace bpt = boost::property_tree;
 

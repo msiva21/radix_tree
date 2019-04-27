@@ -2,13 +2,6 @@
 
 #include "utility.hpp"
 
-#include <cassert>
-#include <map>
-#include <ostream>
-#include <string>
-
-#include <boost/format.hpp>
-
 namespace radix_tree {
 
 template<typename K, typename V>
@@ -96,63 +89,11 @@ traverse(Key const& query, Visitor &&visit) const
 }
 
 template<typename K, typename V>
-boost::property_tree::ptree RadixTree<K, V>::
-statistics() const
+template<typename Visitor>
+void RadixTree<K, V>::
+traverse_all(Visitor &&visit) const
 {
-    size_t numBranch = 0, numLeaf = 0;
-    std::map<size_t, size_t> childCounts;
-    std::map<size_t, size_t> valueCounts;
-    std::map<size_t, size_t> branchsByLevel;
-    std::map<size_t, size_t> leavesByLevel;
-
-    m_root.traverse(
-        [&](NodeType const& node, size_t const level) {
-            if (node.hasChild()) {
-                ++numBranch;
-                ++childCounts[node.childCount()];
-                ++branchsByLevel[level];
-            }
-            else {
-                ++numLeaf;
-                ++leavesByLevel[level];
-            }
-            ++valueCounts[node.values().size()];
-        }
-    );
-
-    namespace bpt = boost::property_tree;
-    bpt::ptree result;
-
-    result.put("Number of leaf", numLeaf);
-    result.put("Number of branch", numBranch);
-    result.put("Number of nodes", node_count());
-    result.put("Number of values", value_count());
-
-    bpt::ptree child;
-    for (auto const& item: childCounts) {
-        child.put(std::to_string(item.first), item.second);
-    }
-    result.put_child("Branches by children", child);
-
-    child.clear();
-    for (auto const& item: branchsByLevel) {
-        child.put(std::to_string(item.first), item.second);
-    }
-    result.put_child("Branches by level", child);
-
-    child.clear();
-    for (auto const& item: leavesByLevel) {
-        child.put(std::to_string(item.first), item.second);
-    }
-    result.put_child("Leaves by level", child);
-
-    child.clear();
-    for (auto const& item: valueCounts) {
-        child.put(std::to_string(item.first), item.second);
-    }
-    result.put_child("Nodes by values", child);
-
-    return result;
+    m_root.traverse(visit);
 }
 
 } // namespace radix_tree

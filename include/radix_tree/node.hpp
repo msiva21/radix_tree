@@ -3,10 +3,11 @@
 
 #include "node_factory.hpp"
 
+#include <iterator>
+#include <locale>
 #include <memory>
 #include <vector>
 
-#include <boost/algorithm/string.hpp>
 #include <boost/range/iterator_range.hpp>
 #include <boost/intrusive/set.hpp>
 
